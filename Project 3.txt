@@ -1,33 +1,54 @@
 #include <stdio.h>
 #include <windows.h>
+#define MOD 1000000007 
+#define MAX 31 
+#define dig 2 
 
-// Функція для підрахунку кількості чисел із заданими цифрами
-int countNumbers(int n) {
-    if (n == 1) {
-        return 2; // Для 1 цифри можливі два числа: 5 і 9
-    }
+// Оголошення глобальної змінної dp
+long long dp[MAX][dig+1][dig+1]; 
 
-    int count[2][n]; // Матриця для зберігання кількості чисел із цифрами
-    count[0][0] = count[1][0] = 1; // Перша цифра може бути 5 або 9
-    count[0][1] = count[1][1] = 2; // Друга цифра може бути 5 або 9, оскільки три послідовні однакові цифри не допускаються
-
-    for (int i = 2; i < n; i++) {
-        count[0][i] = count[0][i - 1] + count[1][i - 1]; // Кількість чисел з i цифрами, що закінчуються на 5
-        count[1][i] = count[0][i - 1] + count[1][i - 1]; // Підрахунок чисел з i цифрами, що закінчуються на 9
-    }
-
-    return count[0][n - 1] + count[1][n - 1]; // Повертає загальну кількість чисел із n цифр
-}
-
+// Функція для попереднього обчислення значень dp
+void precompute() { 
+    int i, j, k; 
+    dp[1][1][0] = dp[1][0][1] = 1; 
+// Подвійний цикл для обчислення значень dp
+    for(i = 2; i < MAX; i++) { 
+        for(j = 0; j <= dig; j++) { 
+            for(k = 0; k <= dig; k++) { 
+// Обчислення наступних значень dp залежно від попередніх
+                if(j < dig) dp[i][j+1][0] += dp[i-1][j][k]; 
+                if(k < dig) dp[i][0][k+1] += dp[i-1][j][k]; 
+// Обмеження значень dp до MOD
+                dp[i][j+1][0] %= MOD; 
+                dp[i][0][k+1] %= MOD; 
+            } 
+        } 
+    } 
+} 
+// Функція для обчислення відповіді для заданого n
+long long int compute(int n) { 
+    long long int ans = 0; 
+// Подвійний цикл для обчислення суми значень dp[n][i][j]
+    for(int i = 0; i <= dig; i++) { 
+        for(int j = 0; j <= dig; j++) { 
+            ans += dp[n][i][j]; 
+ // Обмеження відповіді до MOD
+            ans %= MOD; 
+        } 
+    } 
+    return ans; 
+} 
+ 
 int main() {
-SetConsoleCP(1251);
+ SetConsoleCP(1251);
   SetConsoleOutputCP(1251);
-    int n;
-    printf("Введіть кількість цифр: ");
-    scanf("%d", &n);
-
-    int result = countNumbers(n);
-    printf("Кількість можливих чисел: %d\n", result);
-
-    return 0;
+    precompute(); 
+// Оголошення змінної n
+    int n; 
+// Запит введення значення n
+    printf("Введіть ціле число р (р ≤ 30): "); 
+    scanf("%d", &n);  
+// Виведення кількості чисел з n розрядами
+    printf("Кількість чисел із %d розрядів: %lld\n", n, compute(n)); 
+    return 0; 
 }
